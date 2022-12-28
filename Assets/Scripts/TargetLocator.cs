@@ -5,23 +5,59 @@ using UnityEngine;
 public class TargetLocator : MonoBehaviour
 {
     [SerializeField] Transform weapon;
+    [SerializeField] float range = 15f;
+    ParticleSystem projectileParticles;
     Transform target;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        target = FindObjectOfType<EnemyMover>().transform;
+        projectileParticles = GetComponentInChildren<ParticleSystem>();
     }
 
-    // Update is called once per frame
     void Update()
     {
+        FindClosestTarget();
         AimWeapon();
     }
 
     private void AimWeapon()
     {
+        float targetDistance = Vector3.Distance(transform.position, target.position);
+        Attack(targetDistance <= range);
+
         weapon.LookAt(target);
     }
+
+    private void Attack(bool isActive)
+    {
+        if (isActive && !projectileParticles.isPlaying)
+        {
+            projectileParticles.Play();
+        }
+
+        if (!isActive && projectileParticles.isPlaying)
+        {
+            projectileParticles.Stop();
+        }
+    }
     
+    
+    private void FindClosestTarget()
+    {
+        Enemy[] enemies = FindObjectsOfType<Enemy>();
+        Transform closestTarget = null;
+        float maxDistance = Mathf.Infinity;
+
+        foreach(Enemy enemy in enemies)
+        {
+            float targetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+            if (targetDistance < maxDistance)
+            {
+                closestTarget = enemy.transform;
+                maxDistance = targetDistance;
+            }
+        }
+
+        target = closestTarget;
+    }
 }
