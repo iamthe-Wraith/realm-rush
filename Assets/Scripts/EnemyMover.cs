@@ -10,11 +10,26 @@ public class EnemyMover : MonoBehaviour
     [Range(0f,5f)]
     float speed = 1f;
 
-    void Start()
+    void OnEnable()
     {
+        FindPath();
+        ReturnToStart();
         StartCoroutine(FollowPath());
     }
     
+    private void FindPath()
+    {
+        path.Clear();
+
+        GameObject pathContainer = GameObject.FindGameObjectWithTag("Path");
+
+        foreach(Waypoint waypoint in pathContainer.GetComponentsInChildren<Waypoint>())
+        {
+            path.Add(waypoint);
+        }
+    }
+    
+
     private IEnumerator FollowPath()
     {
         foreach(Waypoint waypoint in path)
@@ -32,5 +47,19 @@ public class EnemyMover : MonoBehaviour
                 yield return new WaitForEndOfFrame();
             }
         }
+
+        ProcessReachedDestination();
     }
+
+    private void ReturnToStart()
+    {
+        transform.position = path[0].transform.position;
+    }
+    
+
+    private void ProcessReachedDestination()
+    {
+        gameObject.SetActive(false);
+    }
+    
 }
