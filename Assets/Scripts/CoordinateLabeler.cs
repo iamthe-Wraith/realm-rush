@@ -16,7 +16,11 @@ public class CoordinateLabeler : MonoBehaviour
     void Awake()
     {
         label = GetComponentInChildren<TextMeshPro>();
-        label.enabled = false;
+
+        if (label != null)
+        {
+            label.enabled = false;
+        }
 
         DisplayCoordinates();
     }
@@ -36,14 +40,16 @@ public class CoordinateLabeler : MonoBehaviour
         }
         else
         {
-            ColorCoordinates();
+            SetLabelColor();
         }
 
         ToggleLabels();
     }
 
-    private void ColorCoordinates()
+    private void SetLabelColor()
     {
+        if(label == null) { return; }
+
         if (waypoint.IsPlaceable)
         {
             label.color = defaultColor;
@@ -68,7 +74,7 @@ public class CoordinateLabeler : MonoBehaviour
 
     private void ToggleLabels()
     {
-        if(Input.GetKeyDown(KeyCode.C))
+        if(Input.GetKeyDown(KeyCode.C) && label != null)
         {
             label.enabled = !label.IsActive();
         }
