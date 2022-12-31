@@ -7,6 +7,9 @@ public class PathFinder : MonoBehaviour
     [SerializeField] Vector2Int startingCoordinates;
     [SerializeField] Vector2Int destinationCoordinates;
 
+    public Vector2Int StartingCoordinates { get { return startingCoordinates; } }
+    public Vector2Int DestinationCoordinates { get { return destinationCoordinates; } }
+
     Node currentSearchNode;
     Node startNode;
     Node destinationNode;
@@ -24,15 +27,32 @@ public class PathFinder : MonoBehaviour
         if (gridManager != null)
         {
             grid = gridManager.Grid;
+            startNode = grid[startingCoordinates];
+            destinationNode = grid[destinationCoordinates];
         }
     }
 
     private void Start()
     {
-        startNode = gridManager.Grid[startingCoordinates];
-        destinationNode = gridManager.Grid[destinationCoordinates];
-
         GetNewPath();
+    }
+
+    public List<Node> GetNewPath()
+    {
+        return GetNewPath(startingCoordinates);
+    }
+
+    public List<Node> GetNewPath(Vector2Int coordinates)
+    {
+        Debug.Log($"coordinates {coordinates.x},{coordinates.y}");
+
+        BreadthFirstSearch(coordinates);
+        return BuildPath();
+    }
+
+    public void NotifyReceivers()
+    {
+        BroadcastMessage("RecalculatePath", false, SendMessageOptions.DontRequireReceiver);
     }
 
     public bool WillBlockPath(Vector2Int coordinates)
@@ -47,20 +67,13 @@ public class PathFinder : MonoBehaviour
 
             if (newPath.Count <= 1)
             {
-                GetNewPath();
+                GetNewPath(coordinates);
                 return true;
             }
         }
         
         return false;
     }
-
-    private List<Node> GetNewPath()
-    {
-        BreadthFirstSearch();
-        return BuildPath();
-    }
-    
 
     private void ExploreNeighbors()
     {
@@ -88,16 +101,19 @@ public class PathFinder : MonoBehaviour
     }
 
     // PATH FINDING ALGORITHMS
-    private void BreadthFirstSearch()
+    private void BreadthFirstSearch(Vector2Int coordinates)
     {
+        startNode.isWalkable = true;
+        destinationNode.isWalkable = true;
+
         gridManager.ResetNodes();
         frontier.Clear();
         reached.Clear();
 
         bool isRunning = true;
 
-        frontier.Enqueue(startNode);
-        reached.Add(startingCoordinates, startNode);
+        frontier.Enqueue(grid[coordinates]);
+        reached.Add(coordinates, grid[coordinates]);
 
         while(frontier.Count > 0 && isRunning)
         {
