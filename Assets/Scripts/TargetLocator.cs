@@ -22,6 +22,8 @@ public class TargetLocator : MonoBehaviour
 
     private void AimWeapon()
     {
+        if (target == null) { return; }
+
         float targetDistance = Vector3.Distance(transform.position, target.position);
         Attack(targetDistance <= range);
 
@@ -30,6 +32,8 @@ public class TargetLocator : MonoBehaviour
 
     private void Attack(bool isActive)
     {
+        if (target == null) { return; }
+        
         if (isActive && !projectileParticles.isPlaying)
         {
             projectileParticles.Play();

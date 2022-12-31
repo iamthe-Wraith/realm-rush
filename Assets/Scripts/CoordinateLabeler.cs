@@ -8,13 +8,16 @@ public class CoordinateLabeler : MonoBehaviour
 {
     [SerializeField] Color defaultColor = Color.white;
     [SerializeField] Color blockedColor = Color.gray;
+    [SerializeField] Color exploredColor = Color.yellow;
+    [SerializeField] Color pathColor = new Color(1f, 0.2f, 0f);
 
     TextMeshPro label;
-    Waypoint waypoint;
     Vector2Int coordinates = new Vector2Int();
+    GridManager gridManager;
 
     void Awake()
     {
+        gridManager = FindObjectOfType<GridManager>();
         label = GetComponentInChildren<TextMeshPro>();
 
         if (label != null)
@@ -23,11 +26,6 @@ public class CoordinateLabeler : MonoBehaviour
         }
 
         DisplayCoordinates();
-    }
-
-    void Start()
-    {
-        waypoint = gameObject.GetComponent<Waypoint>();
     }
 
     void Update()
@@ -48,25 +46,36 @@ public class CoordinateLabeler : MonoBehaviour
 
     private void SetLabelColor()
     {
-        if(label == null) { return; }
+        if (gridManager == null | label == null) { return; }
 
-        if (waypoint.IsPlaceable)
-        {
-            label.color = defaultColor;
-        }
-        else
+        Node node = gridManager.GetNode(coordinates);
+
+        if (node == null) { return; }
+
+        if (!node.isWalkable)
         {
             label.color = blockedColor;
         }
+        else if (node.isPath)
+        {
+            label.color = pathColor;
+        }
+        else if (node.isExplored)
+        {
+            label.color = exploredColor;
+        }
+        else
+        {
+            label.color = defaultColor;
+        }
     }
-    
 
     private void DisplayCoordinates()
     {
-        if (label != null)
+        if (label != null && gridManager != null)
         {
-            coordinates.x = Mathf.RoundToInt(transform.position.x / UnityEditor.EditorSnapSettings.move.x);
-            coordinates.y = Mathf.RoundToInt(transform.position.z / UnityEditor.EditorSnapSettings.move.z);
+            coordinates.x = Mathf.RoundToInt(transform.position.x / gridManager.UnityGridSize);
+            coordinates.y = Mathf.RoundToInt(transform.position.z / gridManager.UnityGridSize);
 
             label.text = $"{coordinates.x},{coordinates.y}";
         }
@@ -79,7 +88,6 @@ public class CoordinateLabeler : MonoBehaviour
             label.enabled = !label.IsActive();
         }
     }
-    
 
     private void UpdateObjectName()
     {
